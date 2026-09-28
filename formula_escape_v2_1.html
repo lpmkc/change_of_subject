@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Formula Escape 主項大逃亡</title>
+<style>
+:root{
+  --bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#667085;--line:#dfe5ee;
+  --accent:#3b6eea;--accent2:#7c4dff;--good:#16885d;--bad:#c63b46;--warn:#b46b00;
+  --soft:#eef3ff;--shadow:0 14px 34px rgba(30,50,90,.10);--radius:22px;
+}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC",sans-serif;background:linear-gradient(180deg,#f7f9fd 0%,#eef3fb 100%);color:var(--ink);min-height:100vh}
+button{font:inherit} .app{max-width:1180px;margin:0 auto;padding:18px 18px 34px}
+.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px;position:sticky;top:0;z-index:10;padding:10px 0;background:linear-gradient(180deg,rgba(247,249,253,.97),rgba(247,249,253,.80));backdrop-filter:blur(10px)}
+.brand{font-weight:900;letter-spacing:.2px}.brand small{font-weight:700;color:var(--muted);margin-left:6px}.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn,.icon-btn,.op-card{border:0;border-radius:14px;cursor:pointer;transition:.18s transform,.18s box-shadow,.18s background,.18s opacity}.btn:active,.op-card:active{transform:scale(.98)}
+.btn{padding:12px 16px;background:var(--accent);color:#fff;font-weight:800;box-shadow:0 8px 18px rgba(59,110,234,.22)}
+.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}.btn.ghost{background:transparent;color:var(--muted);box-shadow:none}.btn.good{background:var(--good)}.btn.warn{background:#fff5e8;color:#8c5200;border:1px solid #f2d6a6;box-shadow:none}.btn:disabled{opacity:.48;cursor:not-allowed;transform:none}
+.icon-btn{width:42px;height:42px;background:#fff;border:1px solid var(--line);font-weight:900}
+.card{background:var(--panel);border:1px solid rgba(221,228,238,.9);box-shadow:var(--shadow);border-radius:var(--radius);padding:22px}.center{text-align:center}
+.hero{padding:52px 24px}.hero h1{font-size:clamp(34px,6vw,64px);margin:0 0 6px;line-height:1}.hero h2{margin:0 0 18px;font-size:clamp(20px,3vw,30px);color:var(--accent)}.hero p{color:var(--muted);font-size:18px;margin:10px auto 28px;max-width:650px}.hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:var(--soft);color:#3156ae;font-weight:800;font-size:14px}.badge.good{background:#eaf7f1;color:var(--good)}.badge.warn{background:#fff5e8;color:#975d09}.badge.lock{background:#f1f2f5;color:#7f8796}
+.stage-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.stage{min-height:140px;text-align:left;position:relative}.stage h3{margin:10px 0 5px}.stage p{margin:0;color:var(--muted);font-size:14px}.stage.locked{opacity:.58}.stage.current{outline:3px solid #b9caff}.stage .stars-mini{position:absolute;right:14px;top:14px;font-size:13px;color:#9a6a00}
+.section-title{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:8px 0 14px}.section-title h2{margin:0}.section-title p{margin:0;color:var(--muted)}
+.game-grid{display:grid;grid-template-columns:240px minmax(0,1fr) 280px;gap:16px;align-items:start}.side-stack{display:flex;flex-direction:column;gap:14px}.game-card{min-height:560px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.progress-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.progress-track{height:10px;background:#edf0f5;border-radius:999px;overflow:hidden;flex:1}.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .3s}
+.formula-wrap{padding:28px 10px 18px;text-align:center}.formula-label{font-size:14px;font-weight:800;color:var(--muted);margin-bottom:8px}.formula{font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.42;letter-spacing:.4px;word-break:break-word;min-height:1.55em;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.05em}
+.math-side{display:inline-flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.04em;padding:.03em .08em;border-radius:.18em;transition:.35s background,.35s transform,.35s opacity}
+.math-eq{display:inline-block;margin:0 .18em}
+.math-paren{display:inline-flex;align-items:center}
+.frac{display:inline-grid;grid-template-rows:auto auto;vertical-align:middle;align-items:center;justify-items:stretch;line-height:1.02;margin:0 .10em;min-width:.82em;font-size:.94em}
+.frac-num{padding:0 .14em .10em;border-bottom:.075em solid currentColor;text-align:center;white-space:nowrap}
+.frac-den{padding:.10em .14em 0;text-align:center;white-space:nowrap}
+.applied-op{display:inline-flex;align-items:center;gap:.08em}
+.applied-op .op-symbol{font-size:.82em;color:var(--accent);font-weight:950;margin:0 .04em}
+.cancel-factor{position:relative;display:inline-block;color:#a3404a;transition:.35s opacity,.35s transform}
+.cancel-factor::after{content:"";position:absolute;left:-.08em;right:-.08em;top:52%;height:.075em;background:#c63b46;transform:rotate(-14deg);transform-origin:center;border-radius:9px}
+.cancel-phase .math-side.target-side{background:#fff4db;transform:scale(1.025)}
+.cancel-phase .cancel-factor{animation:cancelFade .78s ease both}
+.result-phase{animation:resultSettle .55s ease}
+@keyframes cancelFade{0%{opacity:1;transform:scale(1)}55%{opacity:1;transform:scale(1.08)}100%{opacity:.18;transform:scale(.86)}}
+@keyframes resultSettle{0%{opacity:.25;transform:translateY(5px)}100%{opacity:1;transform:none}}.formula .target{color:var(--accent);padding:0 .06em;border-radius:8px;background:#eaf0ff}.target-line{margin-top:16px;font-size:18px;font-weight:900}.target-line .target{color:var(--accent)}
+.transform-note{min-height:44px;margin:14px auto 0;padding:10px 14px;border-radius:13px;background:#f7f9fd;color:#4a5873;display:inline-flex;align-items:center;justify-content:center;font-weight:800}.transform-note.good{background:#eaf7f1;color:var(--good)}.transform-note.bad{background:#fff0f1;color:var(--bad)}
+.chain{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:16px 0}.chain-node{padding:10px 13px;border-radius:12px;background:#f1f4f9;border:1px solid var(--line);font-weight:900;min-width:54px;text-align:center}.chain-node.target{background:#eaf0ff;border-color:#bdccff;color:#2e59ca}.chain-node.outer{box-shadow:0 0 0 3px rgba(124,77,255,.18);border-color:#ae95ff}.chain-arrow{color:#8a94a6;font-weight:900}
+.ops-title{text-align:center;font-weight:900;margin:4px 0 10px}.ops{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.op-card{min-height:62px;background:#fff;border:2px solid var(--line);font-size:22px;font-weight:900;color:var(--ink);box-shadow:0 6px 14px rgba(30,50,90,.07)}.op-card:hover{border-color:#b7c8f7;transform:translateY(-1px)}.op-card.selected{border-color:var(--accent);background:#eef3ff;box-shadow:0 0 0 3px rgba(59,110,234,.14)}.op-card:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.apply-zone{margin-top:12px;min-height:74px;border:2px dashed #aeb9ca;border-radius:16px;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;color:#6d788a;font-weight:900;background:#fbfcfe;transition:.18s}.apply-zone.dragover,.apply-zone.ready{border-color:var(--accent);background:#eef3ff;color:#3156ae}.apply-zone.locked{opacity:.55}
+.history{display:flex;flex-direction:column;gap:8px;max-height:350px;overflow:auto}.history-item{padding:10px 12px;background:#f7f9fc;border-radius:12px;font-weight:750}.history-item small{display:block;color:var(--muted);margin-top:4px}.hint-box{padding:14px;border-radius:14px;background:#fff8e7;border:1px solid #f3dfaf;color:#7b5718;font-weight:750;min-height:72px}
+.shields{font-size:22px;letter-spacing:3px}.stars{font-size:24px;letter-spacing:2px}.stat{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #eef1f5}.stat:last-child{border:0}.muted{color:var(--muted)}
+.room-strip{display:flex;gap:7px;justify-content:center;margin:10px 0 0}.door{width:34px;height:44px;border-radius:5px 5px 2px 2px;background:#dde3ee;border:2px solid #cad2df;display:grid;place-items:center;font-size:17px}.door.open{background:#eaf7f1;border-color:#a8d9c5}.door.now{outline:3px solid #b9caff}
+.boss-hp{display:flex;gap:6px;justify-content:center;margin-top:10px;font-size:24px}.boss-avatar{font-size:68px;filter:drop-shadow(0 12px 16px rgba(55,48,100,.16));transition:.2s}.boss-avatar.hit{transform:translateX(6px) rotate(3deg)}
+.overlay{position:fixed;inset:0;background:rgba(14,23,38,.46);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}.overlay.show{display:flex}.modal{max-width:720px;width:100%;max-height:90vh;overflow:auto}.tutorial-eq{font-size:34px;font-weight:900;margin:16px 0}.tutorial-steps{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tutorial-step{padding:16px;border-radius:14px;background:#f7f9fd;border:1px solid var(--line)}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.summary-box{padding:18px;border-radius:15px;background:#f7f9fd;text-align:center}.summary-box strong{font-size:28px;display:block}.summary-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.practice-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.practice-card h3{margin:8px 0}.practice-card p{color:var(--muted);min-height:42px}
+@media(max-width:980px){.game-grid{grid-template-columns:1fr}.side-stack.left{order:2}.game-card{order:1}.side-stack.right{order:3}.stage-grid{grid-template-columns:repeat(2,1fr)}.practice-grid{grid-template-columns:repeat(2,1fr)}.history{max-height:220px}.game-card{min-height:auto}}
+@media(max-width:640px){.app{padding:10px 10px 24px}.card{padding:16px;border-radius:18px}.hero{padding:34px 16px}.topbar{align-items:flex-start}.brand small{display:block;margin-left:0}.stage-grid,.practice-grid{grid-template-columns:1fr}.ops{grid-template-columns:repeat(2,1fr)}.op-card{min-height:58px}.tutorial-steps{grid-template-columns:1fr}.summary-grid{grid-template-columns:1fr}.formula{font-size:38px}.game-card{padding:14px}.btn{min-height:48px}.stage{min-height:118px}}
+.fade-in{animation:fadeIn .25s ease}.pulse{animation:pulse .45s ease}.shake{animation:shake .28s ease}.unlock{animation:unlock .55s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}@keyframes pulse{50%{transform:scale(1.03)}}@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}@keyframes unlock{0%{transform:scale(.9)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+<div id="overlay" class="overlay"><div id="modal" class="modal card"></div></div>
+<script>
+(()=>{
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const app=$('#app'), overlay=$('#overlay'), modal=$('#modal');
+const STORE='formulaEscapeV2_1';
+const saved=Object.assign({highestStage:1,bestStars:{},sound:false,tutorialCompleted:false},JSON.parse(localStorage.getItem(STORE)||'{}'));
+const S={screen:'home',mode:null,stage:null,qIndex:0,questions:[],step:0,wrong:0,selected:null,locked:false,stats:{firstTry:0,hints:0,totalStars:0},questionStars:3,bossHp:5};
+function save(){localStorage.setItem(STORE,JSON.stringify(saved))}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function shuffle(a){return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1])}
+function fmtSign(n){return n>=0?`+ ${n}`:`− ${Math.abs(n)}`}
+function charsHTML(text,target,cancelFactor=''){
+  const raw=String(text), factor=String(cancelFactor||'').trim();
+  let markStart=-1, markEnd=-1;
+  if(factor){markStart=raw.indexOf(factor);markEnd=markStart>=0?markStart+factor.length:-1}
+  let html='';
+  for(let i=0;i<raw.length;i++){
+    const ch=raw[i]; let c=esc(ch);
+    if(ch===target)c=`<span class="target">${c}</span>`;
+    if(i===markStart)c=`<span class="cancel-factor">${c}`;
+    if(i===markEnd-1)c=`${c}</span>`;
+    html+=c;
+  }
+  return html;
+}
+function matchingOuterParens(expr){
+  const t=expr.trim();if(!(t.startsWith('(')&&t.endsWith(')')))return false;let d=0;
+  for(let i=0;i<t.length;i++){if(t[i]==='(')d++;else if(t[i]===')')d--;if(d===0&&i<t.length-1)return false}
+  return d===0;
+}
+function splitTopAddSub(expr){
+  let d=0;for(let i=0;i<expr.length;i++){const ch=expr[i];if(ch==='(')d++;else if(ch===')')d--;if(d===0&&(ch==='+'||ch==='−')&&i>0)return [expr.slice(0,i).trim(),ch,expr.slice(i+1).trim()]}
+  return null;
+}
+function findTopDiv(expr){
+  let d=0;for(let i=0;i<expr.length;i++){const ch=expr[i];if(ch==='(')d++;else if(ch===')')d--;else if(d===0&&ch==='÷')return i}return -1;
+}
+function exprHTML(expr,target,cancelFactor=''){
+  expr=String(expr).trim();
+  const add=splitTopAddSub(expr);if(add)return `${exprHTML(add[0],target,cancelFactor)} <span class="op-symbol">${add[1]}</span> ${exprHTML(add[2],target,cancelFactor)}`;
+  const di=findTopDiv(expr);if(di>=0){const a=expr.slice(0,di).trim(),b=expr.slice(di+1).trim();return `<span class="frac"><span class="frac-num">${exprHTML(a,target,cancelFactor)}</span><span class="frac-den">${exprHTML(b,target)}</span></span>`}
+  if(matchingOuterParens(expr))return `<span class="math-paren">(${exprHTML(expr.slice(1,-1),target,cancelFactor)})</span>`;
+  return charsHTML(expr,target,cancelFactor);
+}
+function equationHTML(formula,target){
+  const parts=String(formula).split('=');if(parts.length!==2)return exprHTML(formula,target);
+  return `<span class="math-side">${exprHTML(parts[0],target)}</span><span class="math-eq">=</span><span class="math-side">${exprHTML(parts[1],target)}</span>`;
+}
+function hasTarget(side,target){return String(side).includes(target)}
+function operationAppliedHTML(formula,op,target,markCancel=false){
+  const parts=String(formula).split('=');if(parts.length!==2)return equationHTML(formula,target);
+  const lhs=parts[0].trim(),rhs=parts[1].trim(),kind=op.trim().charAt(0),factor=op.trim().slice(1).trim();
+  const sideHTML=(side)=>{
+    const isTarget=hasTarget(side,target),cls=`math-side ${isTarget?'target-side':''}`;
+    if(kind==='÷'){
+      const cancel=isTarget&&markCancel?factor:'';
+      const den=markCancel&&isTarget?`<span class="cancel-factor">${exprHTML(factor,target)}</span>`:exprHTML(factor,target);
+      return `<span class="${cls}"><span class="frac"><span class="frac-num">${exprHTML(side,target,cancel)}</span><span class="frac-den">${den}</span></span></span>`;
+    }
+    if(kind==='×'){
+      const base=matchingOuterParens(side)||splitTopAddSub(side)?`(${exprHTML(side,target)})`:exprHTML(side,target);
+      const fac=markCancel&&isTarget?`<span class="cancel-factor">${exprHTML(factor,target)}</span>`:exprHTML(factor,target);
+      return `<span class="${cls}"><span class="applied-op">${base}<span class="op-symbol">×</span>${fac}</span></span>`;
+    }
+    const fac=exprHTML(factor,target);
+    return `<span class="${cls}"><span class="applied-op">${exprHTML(side,target)} <span class="op-symbol">${kind}</span> ${markCancel&&isTarget?`<span class="cancel-factor">${fac}</span>`:fac}</span></span>`;
+  };
+  return `${sideHTML(lhs)}<span class="math-eq">=</span>${sideHTML(rhs)}`;
+}
+function opActionText(op){
+  const k=op.trim().charAt(0),f=op.trim().slice(1).trim();
+  if(k==='÷')return `等式兩邊同時除以 ${f}`;
+  if(k==='×')return `等式兩邊同時乘 ${f}`;
+  if(k==='−')return `等式兩邊同時減 ${f}`;
+  if(k==='+')return `等式兩邊同時加 ${f}`;
+  return `等式兩邊同時進行 ${op}`;
+}
+function opDistractors(correct){
+  const pool=['+ 2','− 2','+ 3','− 3','× 2','÷ 2','× 3','÷ 3','× 4','÷ 4','+ 5','− 5','× 5','÷ 5','× 2π','÷ 2π','× 2','÷ 2'];
+  const normalized=correct.replace(/\s+/g,' ').trim();
+  let inverse;
+  if(normalized.startsWith('+')) inverse=normalized.replace('+','−');
+  else if(normalized.startsWith('−')) inverse=normalized.replace('−','+');
+  else if(normalized.startsWith('×')) inverse=normalized.replace('×','÷');
+  else if(normalized.startsWith('÷')) inverse=normalized.replace('÷','×');
+  const out=[normalized]; if(inverse && inverse!==normalized) out.push(inverse);
+  for(const p of shuffle(pool)){if(!out.includes(p)&&out.length<4)out.push(p)}
+  return shuffle(out.slice(0,4));
+}
+function qObj(formula,target,chain,states,steps,context=''){
+  return {formula,target,chain,states,steps:steps.map(s=>({...s,options:opDistractors(s.op)})),context};
+}
+function genStage1(){
+  const x=pick(['x','a','b','m','n','p','q']); const y=pick(['y','c','d','r','s','u','v'].filter(v=>v!==x)); const n=ri(2,9); const type=ri(0,3);
+  if(type===0)return qObj(`${y} = ${x} + ${n}`,x,[`+ ${n}`],[`${y} = ${x} + ${n}`,`${x} = ${y} − ${n}`],[{op:`− ${n}`,note:`等式兩邊同時減 ${n}`,detail:`解除 +${n}`}]);
+  if(type===1)return qObj(`${y} = ${x} − ${n}`,x,[`− ${n}`],[`${y} = ${x} − ${n}`,`${x} = ${y} + ${n}`],[{op:`+ ${n}`,note:`等式兩邊同時加 ${n}`,detail:`解除 −${n}`}]);
+  if(type===2)return qObj(`${y} = ${n}${x}`,x,[`× ${n}`],[`${y} = ${n}${x}`,`${x} = ${y} ÷ ${n}`],[{op:`÷ ${n}`,note:`等式兩邊同時除以 ${n}`,detail:`解除 ×${n}`}]);
+  return qObj(`${y} = ${x} ÷ ${n}`,x,[`÷ ${n}`],[`${y} = ${x} ÷ ${n}`,`${x} = ${n}${y}`],[{op:`× ${n}`,note:`等式兩邊同時乘 ${n}`,detail:`解除 ÷${n}`}]);
+}
+function genStage2(){
+  const x=pick(['x','a','b','m','n']); const y=pick(['y','p','q','u','v'].filter(v=>v!==x)); const a=ri(2,7), b=ri(2,9), plus=Math.random()<.5;
+  if(Math.random()<.7){
+    const sign=plus?'+':'−'; const inv=plus?`− ${b}`:`+ ${b}`; const mid=plus?`${y} − ${b} = ${a}${x}`:`${y} + ${b} = ${a}${x}`;
+    return qObj(`${y} = ${a}${x} ${sign} ${b}`,x,[`× ${a}`,`${sign} ${b}`],[`${y} = ${a}${x} ${sign} ${b}`,mid,`${x} = (${plus?`${y} − ${b}`:`${y} + ${b}`}) ÷ ${a}`],[{op:inv,note:`等式兩邊同時${plus?'減':'加'} ${b}`,detail:`先解除 ${sign}${b}`},{op:`÷ ${a}`,note:`等式兩邊同時除以 ${a}`,detail:`再解除 ×${a}`}]);
+  }
+  const sign=plus?'+':'−'; const inv=plus?`− ${b}`:`+ ${b}`; const mid=plus?`${y} − ${b} = ${x} ÷ ${a}`:`${y} + ${b} = ${x} ÷ ${a}`;
+  return qObj(`${y} = ${x} ÷ ${a} ${sign} ${b}`,x,[`÷ ${a}`,`${sign} ${b}`],[`${y} = ${x} ÷ ${a} ${sign} ${b}`,mid,`${x} = ${a}(${plus?`${y} − ${b}`:`${y} + ${b}`})`],[{op:inv,note:`等式兩邊同時${plus?'減':'加'} ${b}`,detail:`先解除 ${sign}${b}`},{op:`× ${a}`,note:`等式兩邊同時乘 ${a}`,detail:`再解除 ÷${a}`}]);
+}
+function genStage3(){
+  const target=pick(['x','a','b','m','n']); const other=pick(['y','p','q','u','v'].filter(v=>v!==target)); const out=pick(['P','Q','R','S']); const k=ri(2,6); const plus=Math.random()<.65;
+  if(Math.random()<.75){
+    const sign=plus?'+':'−'; const inv=plus?`− ${other}`:`+ ${other}`;
+    const mid=`${out} ÷ ${k} = ${target} ${sign} ${other}`;
+    const fin=plus?`${target} = (${out} ÷ ${k}) − ${other}`:`${target} = (${out} ÷ ${k}) + ${other}`;
+    return qObj(`${out} = ${k}(${target} ${sign} ${other})`,target,[`${sign} ${other}`,`× ${k}`],[`${out} = ${k}(${target} ${sign} ${other})`,mid,fin],[{op:`÷ ${k}`,note:`等式兩邊同時除以 ${k}`,detail:`先解除括號外的 ×${k}`},{op:inv,note:`等式兩邊同時${plus?'減':'加'} ${other}`,detail:`再解除 ${sign}${other}`}]);
+  }
+  const sign=plus?'+':'−'; const inv=plus?`− ${other}`:`+ ${other}`;
+  const mid=`${k}${out} = ${target} ${sign} ${other}`;
+  const fin=plus?`${target} = ${k}${out} − ${other}`:`${target} = ${k}${out} + ${other}`;
+  return qObj(`${out} = (${target} ${sign} ${other}) ÷ ${k}`,target,[`${sign} ${other}`,`÷ ${k}`],[`${out} = (${target} ${sign} ${other}) ÷ ${k}`,mid,fin],[{op:`× ${k}`,note:`等式兩邊同時乘 ${k}`,detail:`先解除括號外的 ÷${k}`},{op:inv,note:`等式兩邊同時${plus?'減':'加'} ${other}`,detail:`再解除 ${sign}${other}`}]);
+}
+function formulaBank(){
+ return [
+  qObj('A = lw','w',['× l'],['A = lw','w = A ÷ l'],[{op:'÷ l',note:'等式兩邊同時除以 l',detail:'解除 ×l'}],'長方形面積'),
+  qObj('P = 2(l + w)','w',['+ l','× 2'],['P = 2(l + w)','P ÷ 2 = l + w','w = (P ÷ 2) − l'],[{op:'÷ 2',note:'等式兩邊同時除以 2',detail:'先解除括號外的 ×2'},{op:'− l',note:'等式兩邊同時減 l',detail:'再解除 +l'}],'長方形周界'),
+  qObj('A = ½bh','h',['× b','× ½'],['A = ½bh','2A = bh','h = 2A ÷ b'],[{op:'× 2',note:'等式兩邊同時乘 2',detail:'先解除 ×½'},{op:'÷ b',note:'等式兩邊同時除以 b',detail:'再解除 ×b'}],'三角形面積'),
+  qObj('C = 2πr','r',['× 2π'],['C = 2πr','r = C ÷ 2π'],[{op:'÷ 2π',note:'等式兩邊同時除以 2π',detail:'解除 ×2π'}],'圓周'),
+  qObj('d = vt','t',['× v'],['d = vt','t = d ÷ v'],[{op:'÷ v',note:'等式兩邊同時除以 v',detail:'解除 ×v'}],'距離公式'),
+  qObj('v = u + at','a',['× t','+ u'],['v = u + at','v − u = at','a = (v − u) ÷ t'],[{op:'− u',note:'等式兩邊同時減 u',detail:'先解除 +u'},{op:'÷ t',note:'等式兩邊同時除以 t',detail:'再解除 ×t'}],'速度公式'),
+  qObj('I = Prt','r',['× Pt'],['I = Prt','r = I ÷ (Pt)'],[{op:'÷ Pt',note:'等式兩邊同時除以 Pt',detail:'解除 ×Pt'}],'簡單利息')
+ ];
+}
+function makeQuestions(stage,count){
+  const out=[]; let guard=0;
+  while(out.length<count&&guard<250){
+    guard++;
+    let q=stage===1?genStage1():stage===2?genStage2():stage===3?genStage3():pick(formulaBank());
+    const duplicate=out.some(x=>x.formula===q.formula&&x.target===q.target);
+    const sameAsLast=out.length && out[out.length-1].formula===q.formula && out[out.length-1].target===q.target;
+    if(!duplicate || (guard>80 && !sameAsLast)) out.push(q);
+  }
+  return out;
+}
+const STAGES=[
+ {id:1,name:'解開第一道鎖',desc:'一步主項變換',icon:'🔓'},
+ {id:2,name:'雙重封印',desc:'兩步主項變換',icon:'🧩'},
+ {id:3,name:'括號密室',desc:'括號與外層運算',icon:'🚪'},
+ {id:4,name:'Formula Lab',desc:'真實公式',icon:'🧪'},
+ {id:5,name:'Formula Guardian',desc:'Boss Battle',icon:'👾'}
+];
+function shell(content){return `<div class="topbar"><div class="brand">Formula Escape <small>主項大逃亡</small></div><div class="top-actions"><button class="icon-btn" id="soundBtn" title="聲音">${saved.sound?'🔊':'🔇'}</button><button class="btn ghost" id="homeBtn">⌂ 主頁</button></div></div>${content}`}
+function bindShell(){ $('#soundBtn')?.addEventListener('click',()=>{saved.sound=!saved.sound;save();const b=$('#soundBtn');if(b)b.textContent=saved.sound?'🔊':'🔇'}); $('#homeBtn')?.addEventListener('click',()=>goHome()) }
+function beep(kind='ok'){if(!saved.sound)return;try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator(),g=c.createGain();o.frequency.value=kind==='bad'?180:kind==='unlock'?520:360;g.gain.value=.04;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.08)}catch(e){}}
+function renderHome(){
+ app.innerHTML=shell(`<section class="card hero center fade-in"><div class="badge">中二數學 · Change the Subject</div><h1>Formula Escape</h1><h2>主項大逃亡</h2><p>利用逆運算，一步一步解除包圍目標字母的運算。重點不是「搬項變號」，而是保持等式兩邊平衡。</p><div class="hero-actions"><button class="btn" id="advBtn">▶ Adventure Mode 冒險模式</button><button class="btn secondary" id="practiceBtn">✏ Practice Mode 自由練習</button><button class="btn secondary" id="howBtn">? 如何玩</button><button class="btn ghost" id="clearBtn">清除進度</button></div></section>`);bindShell();$('#advBtn').onclick=()=>{if(!saved.tutorialCompleted)showTutorial(()=>{saved.tutorialCompleted=true;save();renderStageMap()});else renderStageMap()};$('#practiceBtn').onclick=renderPracticeSelect;$('#howBtn').onclick=()=>showTutorial();$('#clearBtn').onclick=()=>confirmModal('清除遊戲進度？','將清除已解鎖關卡、最佳 Stars 及教學完成紀錄。',()=>{saved.highestStage=1;saved.bestStars={};saved.tutorialCompleted=false;save();renderHome()});
+}
+function showTutorial(done){
+ overlay.classList.add('show'); modal.innerHTML=`<div class="center"><div class="badge">How to Play</div><h2>由最外層開始解除運算</h2><div class="tutorial-eq">y = 3x + 5</div><div class="chain"><span class="chain-node target">x</span><span class="chain-arrow">→</span><span class="chain-node">× 3</span><span class="chain-arrow">→</span><span class="chain-node outer">+ 5</span></div></div><div class="tutorial-steps"><div class="tutorial-step"><strong>① 先解除 +5</strong><p>等式兩邊同時減 5：<br><b>y − 5 = 3x</b></p></div><div class="tutorial-step"><strong>② 再解除 ×3</strong><p>等式兩邊同時除以 3：<br><b>x = (y − 5) ÷ 3</b></p></div></div><p class="muted">遊戲內不會把「+5」直接拖過等號；你要選擇一個操作，套用到等式兩邊。</p><div class="summary-actions"><button class="btn" id="tutorialClose">明白，開始</button></div>`;
+ $('#tutorialClose').onclick=()=>{overlay.classList.remove('show');if(done)done()};
+}
+function renderStageMap(){
+ S.screen='map';S.mode='adventure';
+ const cards=STAGES.map(s=>{const unlocked=s.id<=saved.highestStage || (s.id===5&&saved.highestStage>=5);const best=saved.bestStars[s.id]||0;return `<button class="card stage ${unlocked?'':'locked'}" data-stage="${s.id}" ${unlocked?'':'disabled'}><span class="badge ${unlocked?'good':'lock'}">${unlocked?'已解鎖':'🔒 未解鎖'}</span><div class="stars-mini">${best?'⭐ '+best:''}</div><div style="font-size:34px;margin-top:8px">${s.icon}</div><h3>Stage ${s.id===5?'Boss':s.id}</h3><p><b>${s.name}</b><br>${s.desc}</p></button>`}).join('');
+ app.innerHTML=shell(`<div class="section-title"><div><h2>Adventure Map</h2><p>每關完成後解鎖下一區。</p></div><span class="badge">最高解鎖：${saved.highestStage>=5?'Boss':'Stage '+saved.highestStage}</span></div><div class="stage-grid fade-in">${cards}</div>`);bindShell();$$('[data-stage]').forEach(b=>b.onclick=()=>startStage(Number(b.dataset.stage),'adventure'));
+}
+function renderPracticeSelect(){
+ S.mode='practice'; const cards=STAGES.slice(0,4).map(s=>`<div class="card practice-card"><div style="font-size:34px">${s.icon}</div><h3>Level ${s.id}</h3><p><b>${s.name}</b><br>${s.desc}</p><button class="btn secondary" data-practice="${s.id}">開始 10 題</button></div>`).join('');
+ app.innerHTML=shell(`<div class="section-title"><div><h2>Practice Mode 自由練習</h2><p>直接選擇想練習的類型。</p></div></div><div class="practice-grid fade-in">${cards}</div>`);bindShell();$$('[data-practice]').forEach(b=>b.onclick=()=>startStage(Number(b.dataset.practice),'practice'));
+}
+function startStage(stage,mode){
+ S.mode=mode;S.stage=stage;S.qIndex=0;S.step=0;S.wrong=0;S.selected=null;S.locked=false;S.stats={firstTry:0,hints:0,totalStars:0};S.questionStars=3;S.bossHp=5;
+ const count=stage===5?5:(mode==='practice'?10:6); S.questions=stage===5?makeBossQuestions():makeQuestions(stage,count); renderGame();
+}
+function makeBossQuestions(){
+ const mix=[genStage2(),genStage3(),...shuffle(formulaBank()).slice(0,3)];return mix.slice(0,5);
+}
+function currentQ(){return S.questions[S.qIndex]}
+function chainHTML(q){
+ const remaining=q.chain.slice(0,Math.max(0,q.chain.length-S.step));
+ let items=[`<span class="chain-node target">${esc(q.target)}</span>`]; remaining.forEach((c,i)=>{items.push('<span class="chain-arrow">→</span>');items.push(`<span class="chain-node ${i===remaining.length-1?'outer':''}">${esc(c)}</span>`)});return items.join('');
+}
+function historyHTML(q){return q.states.slice(0,S.step+1).map((x,i)=>`<div class="history-item"><div style="font-size:1.08em;text-align:center">${equationHTML(x,q.target)}</div>${i>0?`<small>${esc(q.steps[i-1].note)}</small>`:''}</div>`).join('')}
+function doorsHTML(total){return Array.from({length:total},(_,i)=>`<span class="door ${i<S.qIndex?'open':''} ${i===S.qIndex?'now':''}">${i<S.qIndex?'✓':i+1}</span>`).join('')}
+function renderGame(message='',messageType=''){
+ const q=currentQ(); const total=S.questions.length; const progress=((S.qIndex)/total)*100; const step=q.steps[S.step]; const late=S.stage>=3||S.stage===5; const context=q.context?`<span class="badge">${esc(q.context)}</span>`:'';
+ const stageName=S.stage===5?'Formula Guardian':(S.mode==='practice'?`Practice Level ${S.stage}`:`Stage ${S.stage} · ${STAGES[S.stage-1].name}`);
+ const boss=S.stage===5?`<div class="center"><div id="bossAvatar" class="boss-avatar">👾</div><div class="boss-hp">${'❤️'.repeat(S.bossHp)}${'🖤'.repeat(5-S.bossHp)}</div></div>`:'';
+ app.innerHTML=shell(`<div class="section-title"><div><h2>${stageName}</h2><p>題目 ${S.qIndex+1} / ${total}</p></div>${context}</div><div class="progress-row" style="margin-bottom:14px"><div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div><span class="badge">⭐ ${S.stats.totalStars}</span></div><div class="game-grid fade-in"><aside class="side-stack left"><div class="card"><strong>關卡進度</strong><div class="room-strip">${doorsHTML(total)}</div>${boss}</div><div class="card"><strong>提示</strong><div id="hintBox" class="hint-box" style="margin-top:10px">${hintText(q)}</div></div></aside><main class="card game-card"><div><div class="progress-row"><span class="badge">🛡️ ${S.questionStars}/3</span><span class="shields">${'🛡️'.repeat(Math.max(1,S.questionStars))}</span></div><div class="formula-wrap"><div class="formula-label">目前公式</div><div id="formula" class="formula">${equationHTML(q.states[S.step],q.target)}</div><div class="target-line">🎯 目標：把 <span class="target">${esc(q.target)}</span> 變成主項</div><div id="transformNote" class="transform-note ${messageType}">${message||'觀察目標字母外面的運算，由最外層開始。'}</div></div><div class="chain">${chainHTML(q)}</div></div><div><div class="ops-title">${late?'選擇操作，再拖到／點按下方區域':'選擇下一步正確的逆運算'}</div><div class="ops">${step.options.map(op=>`<button class="op-card ${S.selected===op?'selected':''}" draggable="${late&&!S.locked}" data-op="${esc(op)}" ${S.locked?'disabled':''}>${esc(op)}</button>`).join('')}</div>${late?`<div id="applyZone" class="apply-zone ${S.selected?'ready':''} ${S.locked?'locked':''}">↘ Apply to both sides<br>同時套用至等式兩邊</div>`:''}</div></main><aside class="side-stack right"><div class="card"><strong>我的步驟</strong><div class="history" style="margin-top:10px">${historyHTML(q)}</div></div><div class="card"><div class="stat"><span>本題 Stars</span><strong class="stars">${'⭐'.repeat(S.questionStars)}</strong></div><div class="stat"><span>第一次答對</span><strong>${S.stats.firstTry}</strong></div><div class="stat"><span>使用提示</span><strong>${S.stats.hints}</strong></div><button class="btn secondary" id="restartBtn" style="width:100%;margin-top:12px">↻ 重新開始這題</button></div></aside></div>`);bindShell();bindGame(late);
+}
+function hintText(q){
+ const st=q.steps[S.step]; if(S.wrong===0)return `看看 ${q.target} 最外層的運算是甚麼。`;
+ if(S.wrong===1)return `提示：目前最外層是「${q.chain[q.chain.length-1-S.step]}」。想想它的逆運算。`;
+ if(S.wrong===2)return `再想一步：${st.detail}。`;
+ return `Guided Mode：請選「${st.op}」，再把它套用到等式兩邊。`;
+}
+function bindGame(late){
+ const ops=$$('.op-card'); ops.forEach(b=>{
+   b.addEventListener('click',()=>{if(S.locked)return; const op=b.dataset.op;if(!late){attempt(op)}else{S.selected=op;$$('.op-card').forEach(x=>x.classList.toggle('selected',x===b));$('#applyZone').classList.add('ready')}});
+   if(late){b.addEventListener('dragstart',e=>{if(S.locked){e.preventDefault();return}S.selected=b.dataset.op;e.dataTransfer.setData('text/plain',S.selected)});}
+ });
+ if(late){const z=$('#applyZone');z.addEventListener('click',()=>{if(S.selected&&!S.locked)attempt(S.selected)});z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('dragover')});z.addEventListener('dragleave',()=>z.classList.remove('dragover'));z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('dragover');attempt(e.dataTransfer.getData('text/plain')||S.selected)})}
+ $('#restartBtn').onclick=()=>confirmModal('重新開始這一題？','目前這題的步驟會重設；已失去的 Stars 及提示紀錄會保留。',()=>{S.step=0;S.wrong=0;S.selected=null;renderGame()});
+}
+function attempt(op){
+ if(S.locked)return; const q=currentQ(), step=q.steps[S.step]; if(op===step.op){correctStep()}else{wrongStep()}
+}
+function wrongStep(){
+ S.wrong++; if(S.wrong===1)S.questionStars=Math.min(S.questionStars,2); if(S.wrong>=2)S.questionStars=1; if(S.wrong===1)S.stats.hints++;
+ beep('bad'); const f=$('#formula');f?.classList.add('shake'); const hb=$('#hintBox'); if(hb)hb.textContent=hintText(currentQ()); const n=$('#transformNote'); if(n){n.className='transform-note bad';n.textContent=S.wrong>=3?`Guided Mode：請選 ${currentQ().steps[S.step].op}`:'這一步未能解除最外層運算，再試一次。'}
+ if(S.wrong>=3){$$('.op-card').forEach(b=>{if(b.dataset.op===currentQ().steps[S.step].op)b.classList.add('selected')})}
+ setTimeout(()=>f?.classList.remove('shake'),300);
+}
+function correctStep(){
+ S.locked=true;beep('ok');
+ const q=currentQ(),st=q.steps[S.step],current=q.states[S.step],next=q.states[S.step+1];
+ const n=$('#transformNote'),f=$('#formula');
+ $$('.op-card').forEach(b=>b.disabled=true);
+ if(n){n.className='transform-note good';n.textContent=`第 1 步：${opActionText(st.op)}`}
+ if(f){f.classList.remove('cancel-phase','result-phase');f.innerHTML=operationAppliedHTML(current,st.op,q.target,false)}
+ setTimeout(()=>{
+   if(!f)return;f.classList.add('cancel-phase');f.innerHTML=operationAppliedHTML(current,st.op,q.target,true);
+   if(n){const k=st.op.trim().charAt(0),factor=st.op.trim().slice(1).trim();n.className='transform-note good';n.textContent=(k==='÷'||k==='×')?`第 2 步：目標字母一邊的 ${factor} 可以約去／消除。`:'第 2 步：相反運算互相抵消。'}
+ },950);
+ setTimeout(()=>{
+   if(!f)return;f.classList.remove('cancel-phase');f.classList.add('result-phase');f.innerHTML=equationHTML(next,q.target);
+   if(n){n.className='transform-note good';n.textContent=`第 3 步：整理後得到新的等式。${st.detail}`}
+ },1850);
+ setTimeout(()=>{
+   S.step++;S.selected=null;S.wrong=0;
+   if(S.step>=q.steps.length)finishQuestion();else{S.locked=false;renderGame(`剛才完成：${st.note}`,'good')}
+ },2850);
+}
+function finishQuestion(){
+ const q=currentQ(); const earned=S.questionStars; S.stats.totalStars+=earned; if(earned===3)S.stats.firstTry++; if(S.stage===5){S.bossHp--;beep('unlock')}
+ S.locked=true;
+ const final=q.states[q.states.length-1]; app.querySelector('#formula').innerHTML=equationHTML(final,q.target); const n=$('#transformNote'); if(n){n.className='transform-note good pulse';n.textContent=`🔓 Escaped! 成功把 ${q.target} 變成主項。`}
+ if(S.stage===5){const av=$('#bossAvatar');av?.classList.add('hit')}
+ setTimeout(()=>showQuestionComplete(final,earned),650);
+}
+function showQuestionComplete(final,earned){
+ overlay.classList.add('show');modal.innerHTML=`<div class="center"><div style="font-size:46px">🔓</div><h2>Escaped!</h2><p class="muted">成功把目標字母變成主項。</p><div class="tutorial-eq" style="font-size:30px">${equationHTML(final,currentQ().target)}</div><div class="stars">${'⭐'.repeat(earned)}${'☆'.repeat(3-earned)}</div><p>${earned===3?'由最外層開始，完全正確！':earned===2?'經過一次提示後完成。':'在引導下完成，繼續練習。'}</p><button class="btn" id="nextQBtn">${S.qIndex===S.questions.length-1?'查看結果':'下一題'}</button></div>`;$('#nextQBtn').onclick=()=>{overlay.classList.remove('show');if(S.qIndex===S.questions.length-1)finishStage();else{S.qIndex++;S.step=0;S.wrong=0;S.questionStars=3;S.selected=null;S.locked=false;renderGame()}};
+}
+function finishStage(){
+ const stage=S.stage; const maxStars=S.questions.length*3; if(S.mode==='adventure'){
+   saved.bestStars[stage]=Math.max(saved.bestStars[stage]||0,S.stats.totalStars);
+   if(stage<5)saved.highestStage=Math.max(saved.highestStage,stage+1); else saved.highestStage=5; save();
+ }
+ const bossText=stage===5?'Formula Guardian Defeated!':'Level Complete!';
+ app.innerHTML=shell(`<section class="card center fade-in"><div style="font-size:64px">${stage===5?'🏆':'🔓'}</div><h1>${bossText}</h1><p class="muted">你完成了這一關的主項變換挑戰。</p><div class="summary-grid"><div class="summary-box"><span>完成題數</span><strong>${S.questions.length}</strong></div><div class="summary-box"><span>第一次答對</span><strong>${S.stats.firstTry}</strong></div><div class="summary-box"><span>Stars</span><strong>${S.stats.totalStars}/${maxStars}</strong></div></div><div class="card" style="max-width:620px;margin:0 auto 18px;text-align:left"><b>你正在建立的思考方式：</b><p>先找出目標字母最外層的運算 → 使用逆運算 → 對等式兩邊做相同操作 → 再處理下一層。</p></div><div class="summary-actions"><button class="btn" id="againBtn">再玩一次</button>${S.mode==='adventure'&&stage<5?`<button class="btn secondary" id="nextStageBtn">下一 Stage</button>`:''}<button class="btn secondary" id="backBtn">${S.mode==='practice'?'返回練習選擇':'返回地圖'}</button></div></section>`);bindShell();$('#againBtn').onclick=()=>startStage(stage,S.mode);$('#nextStageBtn')?.addEventListener('click',()=>startStage(stage+1,'adventure'));$('#backBtn').onclick=()=>S.mode==='practice'?renderPracticeSelect():renderStageMap();
+}
+function confirmModal(title,text,yes){overlay.classList.add('show');modal.innerHTML=`<h2>${esc(title)}</h2><p>${esc(text)}</p><div class="summary-actions"><button class="btn secondary" id="cancelM">取消</button><button class="btn warn" id="yesM">確定</button></div>`;$('#cancelM').onclick=()=>overlay.classList.remove('show');$('#yesM').onclick=()=>{overlay.classList.remove('show');yes()}}
+function goHome(){S.screen='home';renderHome()}
+renderHome();
+})();
+</script>
+</body>
+</html>
